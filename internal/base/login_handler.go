@@ -1,9 +1,13 @@
 package base
 
 import (
+	
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/buraktabakoglu/TODO_APP_AUTH/pkg/auth"
 	"github.com/buraktabakoglu/TODO_APP_AUTH/pkg/models"
@@ -12,6 +16,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/**
+@Summary Login and get a JWT token
+@Produce json
+@Param user body models.User true "User email and password"
+@Success 200 {object} models.Token
+@Router /auth/login [post]
+*/
 func (server *Server) Login(c *gin.Context) {
 
 	body, err := ioutil.ReadAll(c.Request.Body)
@@ -29,6 +40,28 @@ func (server *Server) Login(c *gin.Context) {
 			"status": http.StatusUnprocessableEntity,
 			"error":  "Cannot unmarshal body",
 		})
+		return
+	}
+	dbuser := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
+
+	db, err := sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", dbuser, password, dbname))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to the database"})
+		return
+	}
+	defer db.Close()
+
+	// Check if the user is active in the database
+	var isActive bool
+	err = db.QueryRow("SELECT is_active FROM users WHERE email = $1", user.Email).Scan(&isActive)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user information from the database"})
+		return
+	}
+	if !isActive {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "This account has been deactivated. Please contact an administrator"})
 		return
 	}
 
@@ -75,10 +108,20 @@ func (server *Server) SignIn(email, password string) (string, error) {
 	return auth.CreateToken(uint32(user.ID))
 }
 
+/**
+@Summary Logout a user by blacklisting their token
+@Description This function takes in the request context and extracts the token from it. It then connects to a Redis instance and adds the token to a "blacklisted_tokens" set.
+@Tags User
+@Accept json
+@Produce json
+@Success 200
+@Failure 400
+@Failure 401
+@Failure 500
+@Router /auth/logout [post]
+*/
 func (server *Server) Logout(c *gin.Context) {
 	tokenString := auth.ExtractToken(c.Request)
-
-	
 
 	// Redis'e bağlan ve tokeni "blacklisted_tokens" setine ekle
 	redisConn := auth.GetRedisConnection()

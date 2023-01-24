@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,6 +25,14 @@ func GetRedisConnection() *redis.Client {
 	})
 	return client
 }
+
+func RegisterCreateToken(email string, createdAt time.Time) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(email + createdAt.String()))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+
 
 func CreateToken(user_id uint32) (string, error) {
 	tokenKey := fmt.Sprintf("token:%d", user_id)

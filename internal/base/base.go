@@ -39,7 +39,7 @@ func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, D
 	server.DB.CreateTable(&models.User{})
 
 	server.Router = gin.Default()
-
+	
 	server.initializeRoutes()
 	
 }

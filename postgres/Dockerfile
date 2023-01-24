@@ -1,0 +1,6 @@
+# Postgres Dockerfile
+FROM postgres:15
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=3g1avcs7r
+ENV POSTGRES_DB=golangapp
+EXPOSE 5432
