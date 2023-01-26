@@ -1,12 +1,9 @@
 package main
 
 import (
-	
 	"github.com/buraktabakoglu/TODO_APP_AUTH/pkg"
-	
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	
 )
 
 // @title Go + Gin Todo API
@@ -24,8 +21,9 @@ import (
 // @query.collection.format multi
 
 func main () {
-
+	
 	pkg.Run()
+	
 }
 
 
