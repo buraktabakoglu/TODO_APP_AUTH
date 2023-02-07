@@ -13,7 +13,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (server *Server) authorize(c *gin.Context) {
+
+/**
+@summary Authorize a user request
+@param c gin.Context -  Gin context to extract the request details
+@route /auth/authorize
+@method GET
+@return 200 - If the user is authorized
+@return 403 - If the user is not authorized
+*/
+func (server *Server) Authorize(c *gin.Context) {
 	userID, err := auth.ExtractTokenID(c.Request)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"message": "Forbidden"})

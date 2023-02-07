@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/buraktabakoglu/TODO_APP_AUTH/pkg/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
@@ -17,7 +16,7 @@ type Server struct {
 	Router *gin.Engine
 }
 
-var errList = make(map[string]string)
+
 
 func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) {
 
@@ -34,12 +33,14 @@ func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, D
 		} else {
 			fmt.Printf("We are connected to the %s database", Dbdriver)
 		}
-	}
+	}	
 
-	server.DB.CreateTable(&models.User{})
+	
+	
+
 
 	server.Router = gin.Default()
-
+	
 	server.initializeRoutes()
 	
 }
