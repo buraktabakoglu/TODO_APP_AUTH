@@ -19,19 +19,18 @@ import (
 )
 
 func GetRedisConnection() *redis.Client {
-	redisHost := os.Getenv("REDIS_HOST")
+	
 	redisPort := os.Getenv("REDIS_PORT")
-	addr := redisHost + ":" + redisPort
+	
 	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
+		Addr:     redisPort,
 		Password: "",
 		DB:       0,
 	})
 
 	zap.S().Info("Redis connection established",
-		zap.String("host", redisHost),
 		zap.String("port", redisPort),
-		zap.String("addr", addr),
+		
 	)
 
 	return client
@@ -65,7 +64,8 @@ func CreateToken(user_id uint32) (string, error) {
 	}
 
 	redisConn := GetRedisConnection()
-	redisConn.Options().Addr = "redis:6379"
+	redisPort := os.Getenv("REDIS_PORT")
+	redisConn.Options().Addr = redisPort
 	redisConn.Set(tokenKey, signedToken, time.Hour)
 
 	if err := redisConn.Set(tokenKey, signedToken, time.Hour).Err(); err != nil {
